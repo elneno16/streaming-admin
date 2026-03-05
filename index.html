@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streaming Dashboard Pro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-play"></i>
+                <span>StreamAdmin</span>
+            </div>
+
+            <nav class="menu">
+                <a href="#" class="active"><i class="fa-solid fa-table-cells-large"></i> Dashboard</a>
+            </nav>
+
+            <div class="stats-card">
+                <h3>Total Cuentas</h3>
+                <h2 id="total-accounts">0</h2>
+            </div>
+            <div class="stats-card">
+                <h3>Total Clientes</h3>
+                <h2 id="total-clients">0</h2>
+            </div>
+            <div class="stats-card financial">
+                <div class="stats-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>Ganancia USD</h3>
+                    <i class="fa-solid fa-dollar-sign" style="color: var(--success);"></i>
+                </div>
+                <h2 id="profit-usd" style="color: var(--success); margin: 8px 0;">$0.00</h2>
+                <div style="background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px; margin-top: 10px;">
+                    <p id="details-usd" style="font-size: 12px; color: #cbd5e1; margin-bottom: 6px;">Ingresos: $0 |
+                        Gastos: $0</p>
+                    <p id="potencial-usd" style="font-size: 12px; color: var(--warn);">DISPONIBLE: $0</p>
+                </div>
+            </div>
+            <div class="stats-card financial">
+                <div class="stats-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>Ganancia Soles</h3>
+                    <i class="fa-solid fa-coins" style="color: var(--success);"></i>
+                </div>
+                <h2 id="profit-soles" style="color: var(--success); margin: 8px 0;">S/ 0.00</h2>
+                <div style="background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px; margin-top: 10px;">
+                    <p id="details-soles" style="font-size: 12px; color: #cbd5e1; margin-bottom: 6px;">Ingresos: S/0 |
+                        Gastos: S/0</p>
+                    <p id="potencial-soles" style="font-size: 12px; color: var(--warn);">DISPONIBLE: S/0</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="search-wrap">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Buscar por cliente, plataforma o correo...">
+                </div>
+                <div class="user-profile">
+                    <div class="avatar">A</div>
+                    <span>Admin</span>
+                </div>
+            </header>
+
+            <div class="content-header">
+                <h1>Gestión de Planes</h1>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div style="position: relative;" id="tools-dropdown-container">
+                        <button class="btn-secondary" id="btn-tools">
+                            <i class="fa-solid fa-toolbox"></i> Herramientas
+                        </button>
+                        <div class="tools-menu" id="tools-menu">
+                            <a href="https://www.netflix.com/tv8" target="_blank"><i class="fa-solid fa-tv"></i> Netflix
+                                TV Code</a>
+                            <a href="https://www.primevideo.com/ontv/code/ref=atv_device_code?ie=UTF8"
+                                target="_blank"><i class="fa-solid fa-tv"></i> Prime Video TV</a>
+                            <a href="https://www.disneyplus.com/es-419/identity/start" target="_blank"><i
+                                    class="fa-solid fa-tv"></i> Disney+ TV</a>
+                            <a href="https://auth.hbomax.com/link" target="_blank"><i class="fa-solid fa-tv"></i> HBO
+                                MAX Link</a>
+                            <a href="https://link.apple.com/" target="_blank"><i class="fa-solid fa-tv"></i> Apple TV
+                                Link</a>
+                        </div>
+                    </div>
+                    <button class="btn-secondary" id="btn-export-excel">
+                        <i class="fa-solid fa-file-excel"></i> Exportar Archivo
+                    </button>
+                    <button class="btn-secondary" id="btn-sort-pago">
+                        <i class="fa-solid fa-money-bill"></i> Pago
+                    </button>
+                    <button class="btn-primary" id="btn-add-new">
+                        <i class="fa-solid fa-plus"></i> Añadir Nuevo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="filter-container" id="filter-container">
+                <button class="btn-filter active" data-filter="Todos">Todos</button>
+                <button class="btn-filter" data-filter="Netflix">Netflix</button>
+                <button class="btn-filter" data-filter="Prime Video">Prime Video</button>
+                <button class="btn-filter" data-filter="Disney Plus">Disney Plus</button>
+                <button class="btn-filter" data-filter="HBO MAX">HBO MAX</button>
+                <button class="btn-filter" data-filter="Apple Tv Plus">Apple Tv Plus</button>
+                <button class="btn-filter" data-filter="Spotify">Spotify</button>
+                <button class="btn-filter" data-filter="YouTube Premium">YouTube</button>
+                <button class="btn-filter" data-filter="Otra">Otras</button>
+                <button class="btn-filter filter-espera" data-filter="En espera">DISPONIBLE</button>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-container">
+                <table id="data-table">
+                    <thead>
+                        <tr>
+                            <th>Plataforma</th>
+                            <th class="col-detalles">Correo</th>
+                            <th class="col-detalles">Clave</th>
+                            <th class="col-detalles">Perfil</th>
+                            <th class="col-detalles">País</th>
+                            <th>Cliente</th>
+                            <th>PIN</th>
+                            <th>Monto</th>
+                            <th>Día Cobro</th>
+                            <th>WhatsApp</th>
+                            <th>Pago</th>
+                            <th>Estado</th>
+                            <th class="col-copy">Copy</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Data will be injected here via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Form (Hidden by default) -->
+    <div class="modal-overlay" id="modal-form">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Agregar Registro</h2>
+                <button class="btn-close" id="btn-close-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="record-form">
+                <input type="hidden" id="record-id">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="plataforma">Plataforma</label>
+                        <select id="plataforma" required>
+                            <option value="Netflix">Netflix</option>
+                            <option value="Prime Video">Prime Video</option>
+                            <option value="Disney Plus">Disney Plus</option>
+                            <option value="HBO MAX">HBO MAX</option>
+                            <option value="Apple Tv Plus">Apple Tv Plus</option>
+                            <option value="Spotify">Spotify</option>
+                            <option value="YouTube Premium">YouTube Premium</option>
+                            <option value="Otra">Otra</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="correo">Correo</label>
+                        <input type="email" id="correo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="clave">Clave</label>
+                        <input type="text" id="clave" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="perfil">Perfil</label>
+                        <input type="text" id="perfil" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pais">País</label>
+                        <input type="text" id="pais">
+                    </div>
+                    <div class="form-group">
+                        <label for="cliente">Cliente</label>
+                        <input type="text" id="cliente" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pin">PIN / Cód. Seguridad</label>
+                        <input type="text" id="pin">
+                    </div>
+                    <div class="form-group">
+                        <label for="monto">Monto</label>
+                        <input type="text" id="monto">
+                    </div>
+                    <div class="form-group">
+                        <label for="diaCobro">Día Cobro</label>
+                        <input type="text" id="diaCobro">
+                    </div>
+                    <div class="form-group">
+                        <label for="whatsapp">WhatsApp</label>
+                        <input type="text" id="whatsapp">
+                    </div>
+                    <div class="form-group">
+                        <label for="estatus">Estado</label>
+                        <select id="estatus" required>
+                            <option value="activo">Activo</option>
+                            <option value="En espera">DISPONIBLE</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="btn-cancel">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Exportar -->
+    <div class="modal-overlay" id="modal-export" style="display:none;">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-file-export" style="color: var(--success); margin-right: 10px;"></i>Exportar
+                    Panel</h2>
+                <button class="btn-close" id="btn-close-export"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div style="padding: 28px 24px; display: flex; flex-direction: column; gap: 16px;">
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 4px;">
+                    Selecciona cómo deseas exportar los datos del panel completo (<span id="export-count">0</span>
+                    registros).
+                </p>
+                <!-- Opción 1: Descargar Excel -->
+                <button id="btn-download-csv" style="
+                    display: flex; align-items: center; gap: 16px;
+                    background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.35);
+                    border-radius: 12px; padding: 18px 20px; cursor: pointer;
+                    color: var(--text-main); text-align: left; transition: all 0.25s ease; width: 100%;">
+                    <div
+                        style="width: 44px; height: 44px; border-radius: 10px; background: rgba(16,185,129,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fa-solid fa-file-excel" style="font-size: 20px; color: var(--success);"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 15px; color: #fff;">Descargar archivo Excel</div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Descarga un .csv que se
+                            abre directamente en Excel con cada columna separada</div>
+                    </div>
+                    <i class="fa-solid fa-download"
+                        style="margin-left: auto; color: var(--success); flex-shrink: 0;"></i>
+                </button>
+                <!-- Opción 2: Google Sheets -->
+                <button id="btn-open-sheets" style="
+                    display: flex; align-items: center; gap: 16px;
+                    background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.35);
+                    border-radius: 12px; padding: 18px 20px; cursor: pointer;
+                    color: var(--text-main); text-align: left; transition: all 0.25s ease; width: 100%;">
+                    <div
+                        style="width: 44px; height: 44px; border-radius: 10px; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fa-solid fa-table" style="font-size: 20px; color: var(--accent);"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 15px; color: #fff;">Abrir en Google Sheets</div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Copia los datos y abre
+                            Google Sheets para pegar e importar fácilmente</div>
+                    </div>
+                    <i class="fa-solid fa-external-link-alt"
+                        style="margin-left: auto; color: var(--accent); flex-shrink: 0;"></i>
+                </button>
+                <!-- Instrucción Sheets (oculta hasta que se use) -->
+                <div id="sheets-instructions"
+                    style="display:none; background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: 10px; padding: 14px 16px; font-size: 13px; color: var(--text-muted); line-height: 1.7;">
+                    <strong style="color: var(--accent);">✅ ¡Datos copiados!</strong> Google Sheets se abrió en una
+                    nueva pestaña.<br>
+                    En Google Sheets: <strong style="color: #fff;">Archivo → Importar → Pegar</strong>, pega los datos y
+                    selecciona <em>"Detectar automáticamente"</em>.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="btn-cancel-export">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
