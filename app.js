@@ -27,6 +27,13 @@ const defaultRecords = [
 const STORAGE_KEY = 'streamAdminProRecords';
 const SEED_KEY = 'streamAdminProSeeded';
 
+// ==========================================
+// INTEGRACIÓN CON GOOGLE SHEETS
+// ==========================================
+// 1. Pega aquí el enlace de tu Google Apps Script (Web App URL)
+// 2. Si lo dejas vacío (""), el panel seguirá usando solo el almacenamiento local.
+const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyq7LxytsUSzJ_pgXC7UM9PiIqSkmd-A8zCYZHrSwY5z5cUq4I_o-JIFNXPmVAiJjcORQ/exec";
+
 let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
 if (!localStorage.getItem(SEED_KEY)) {
@@ -34,6 +41,33 @@ if (!localStorage.getItem(SEED_KEY)) {
     records = defaultRecords;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
     localStorage.setItem(SEED_KEY, 'true');
+}
+
+// Función para guardar tanto en local como en la nube (Google Sheets)
+function saveLocalAndCloud() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    if (GOOGLE_WEB_APP_URL) {
+        // Sincronizar en segundo plano
+        fetch(GOOGLE_WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "sync", records: records })
+        }).catch(e => console.error("Error sincronizando con Google Sheets:", e));
+    }
+}
+
+// Función para descargar datos de Google Sheets al iniciar
+async function syncFromGoogle() {
+    if (!GOOGLE_WEB_APP_URL) return;
+    try {
+        const res = await fetch(GOOGLE_WEB_APP_URL);
+        const data = await res.json();
+        if (data && Array.isArray(data)) {
+            records = data;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        }
+    } catch (e) {
+        console.error("Error cargando desde Google Sheets:", e);
+    }
 }
 
 // Full-color SVG / PNG icons for reliability and better aesthetics
@@ -128,12 +162,18 @@ function updatePaymentStatuses() {
     });
 
     if (changed) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        saveLocalAndCloud();
     }
 }
 
 // Initialize
-function init() {
+async function init() {
+    if (GOOGLE_WEB_APP_URL) {
+        // Mostrar mensaje de carga si estamos buscando de internet
+        tableBody.innerHTML = '<tr><td colspan="14" style="text-align:center; padding: 40px; color: var(--text-muted);">Sincronizando con Google Sheets... <i class="fa-solid fa-circle-notch fa-spin"></i></td></tr>';
+        await syncFromGoogle();
+    }
+
     updatePaymentStatuses();
     renderTable();
     updateStats();
@@ -522,7 +562,7 @@ function saveRecord() {
         });
     }
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    saveLocalAndCloud();
     closeModal();
     renderTable();
     updateStats();
@@ -539,7 +579,7 @@ window.editRecord = function (id) {
 window.deleteRecord = function (id) {
     if (confirm('¿Estás seguro de que deseas eliminar este registro?')) {
         records = records.filter(r => r.id !== id);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        saveLocalAndCloud();
         renderTable(searchInput.value);
         updateStats();
     }
@@ -563,7 +603,7 @@ window.togglePago = function (id) {
     const today = new Date();
     r.pagoMonth = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    saveLocalAndCloud();
     renderTable(searchInput.value);
 }
 
