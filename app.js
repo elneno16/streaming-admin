@@ -215,8 +215,8 @@ function renderTable(filterText = searchInput.value) {
 
         let matchesButton = true;
         if (currentFilterData === 'En espera') {
-            const estadoStr = String(record.estatus || '').toLowerCase();
-            matchesButton = (estadoStr === 'en espera' || estadoStr === 'espera' || estadoStr === 'disponible');
+            const estadoStr = String(record.estatus || '').toLowerCase().trim();
+            matchesButton = (estadoStr !== 'activo');
         } else if (currentFilterData !== 'Todos') {
             matchesButton = (record.plataforma === currentFilterData);
         }
@@ -274,8 +274,8 @@ function renderTable(filterText = searchInput.value) {
                 </span>
             </td>
             <td>
-                <span class="badge badge-estado ${String(record.estatus || '').toLowerCase() === 'activo' ? 'badge-activo' : 'badge-espera'}" data-record-id="${record.id}" style="cursor: pointer;" title="Haz clic para cambiar estado">
-                    ${String(record.estatus || '').toLowerCase() === 'activo' ? 'Activo' : 'DISPONIBLE'}
+                <span class="badge badge-estado ${String(record.estatus || '').toLowerCase().trim() === 'activo' ? 'badge-activo' : 'badge-espera'}" data-record-id="${record.id}" style="cursor: pointer;" title="Haz clic para cambiar estado">
+                    ${String(record.estatus || '').toLowerCase().trim() === 'activo' ? 'Activo' : 'DISPONIBLE'}
                 </span>
             </td>
             <td class="col-copy">
@@ -312,8 +312,8 @@ function updateStats() {
     totalAccountsEl.textContent = records.length;
 
     const availableCount = records.filter(r => {
-        const estadoStr = String(r.estatus || '').toLowerCase();
-        return estadoStr === 'en espera' || estadoStr === 'espera' || estadoStr === 'disponible';
+        const estadoStr = String(r.estatus || '').toLowerCase().trim();
+        return estadoStr !== 'activo';
     }).length;
     if (totalAvailableEl) totalAvailableEl.textContent = availableCount;
 
@@ -346,12 +346,12 @@ function updateStats() {
 
     records.forEach(r => {
         const parsed = parseMonto(r.monto);
-        const estadoStr = String(r.estatus || '').toLowerCase();
+        const estadoStr = String(r.estatus || '').toLowerCase().trim();
 
         if (estadoStr === 'activo') {
             if (parsed.currency === 'USD') revenueUSD += parsed.value;
             if (parsed.currency === 'PEN') revenuePEN += parsed.value;
-        } else if (estadoStr === 'en espera' || estadoStr === 'espera' || estadoStr === 'disponible') {
+        } else {
             if (parsed.currency === 'USD') waitUSD += parsed.value;
             if (parsed.currency === 'PEN') waitPEN += parsed.value;
         }
