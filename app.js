@@ -117,6 +117,7 @@ const btnCancel = document.getElementById('btn-cancel');
 const recordForm = document.getElementById('record-form');
 const modalTitle = document.getElementById('modal-title');
 const totalAccountsEl = document.getElementById('total-accounts');
+const totalAvailableEl = document.getElementById('total-available');
 const totalClientsEl = document.getElementById('total-clients');
 const btnTools = document.getElementById('btn-tools');
 const toolsMenu = document.getElementById('tools-menu');
@@ -309,6 +310,12 @@ function parseMonto(montoStr) {
 
 function updateStats() {
     totalAccountsEl.textContent = records.length;
+
+    const availableCount = records.filter(r => {
+        const estadoStr = String(r.estatus || '').toLowerCase();
+        return estadoStr === 'en espera' || estadoStr === 'espera';
+    }).length;
+    if (totalAvailableEl) totalAvailableEl.textContent = availableCount;
 
     // Unique clients
     const clients = new Set(records.map(r => r.cliente.toLowerCase().trim()));
