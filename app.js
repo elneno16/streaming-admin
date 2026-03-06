@@ -216,7 +216,7 @@ function renderTable(filterText = searchInput.value) {
         let matchesButton = true;
         if (currentFilterData === 'En espera') {
             const estadoStr = String(record.estatus || '').toLowerCase();
-            matchesButton = (estadoStr === 'en espera' || estadoStr === 'espera');
+            matchesButton = (estadoStr === 'en espera' || estadoStr === 'espera' || estadoStr === 'disponible');
         } else if (currentFilterData !== 'Todos') {
             matchesButton = (record.plataforma === currentFilterData);
         }
@@ -274,8 +274,8 @@ function renderTable(filterText = searchInput.value) {
                 </span>
             </td>
             <td>
-                <span class="badge ${record.estatus === 'activo' ? 'badge-activo' : 'badge-espera'}">
-                    ${record.estatus === 'activo' ? 'Activo' : 'DISPONIBLE'}
+                <span class="badge badge-estado ${String(record.estatus || '').toLowerCase() === 'activo' ? 'badge-activo' : 'badge-espera'}" data-record-id="${record.id}" style="cursor: pointer;" title="Haz clic para cambiar estado">
+                    ${String(record.estatus || '').toLowerCase() === 'activo' ? 'Activo' : 'DISPONIBLE'}
                 </span>
             </td>
             <td class="col-copy">
@@ -313,7 +313,7 @@ function updateStats() {
 
     const availableCount = records.filter(r => {
         const estadoStr = String(r.estatus || '').toLowerCase();
-        return estadoStr === 'en espera' || estadoStr === 'espera';
+        return estadoStr === 'en espera' || estadoStr === 'espera' || estadoStr === 'disponible';
     }).length;
     if (totalAvailableEl) totalAvailableEl.textContent = availableCount;
 
@@ -346,10 +346,12 @@ function updateStats() {
 
     records.forEach(r => {
         const parsed = parseMonto(r.monto);
-        if (r.estatus === 'activo') {
+        const estadoStr = String(r.estatus || '').toLowerCase();
+
+        if (estadoStr === 'activo') {
             if (parsed.currency === 'USD') revenueUSD += parsed.value;
             if (parsed.currency === 'PEN') revenuePEN += parsed.value;
-        } else if (r.estatus === 'En espera' || r.estatus === 'en espera' || r.estatus === 'espera') {
+        } else if (estadoStr === 'en espera' || estadoStr === 'espera' || estadoStr === 'disponible') {
             if (parsed.currency === 'USD') waitUSD += parsed.value;
             if (parsed.currency === 'PEN') waitPEN += parsed.value;
         }
@@ -440,12 +442,18 @@ function setupEventListeners() {
         exportToGoogleSheets();
     });
 
-    // Delegación de eventos para badge-pago (funciona para filas actuales y futuras)
+    // Delegación de eventos para badge-pago y badge-estado
     tableBody.addEventListener('click', (e) => {
         const badge = e.target.closest('.badge-pago');
         if (badge && badge.dataset.recordId) {
             togglePago(badge.dataset.recordId);
         }
+
+        const badgeEstado = e.target.closest('.badge-estado');
+        if (badgeEstado && badgeEstado.dataset.recordId) {
+            toggleEstado(badgeEstado.dataset.recordId);
+        }
+
         const copyable = e.target.closest('.copyable');
         if (copyable && copyable.dataset.copy) {
             copyToClipboard(decodeURIComponent(copyable.dataset.copy));
@@ -627,6 +635,25 @@ window.togglePago = function (id) {
 
     saveLocalAndCloud();
     renderTable(searchInput.value);
+}
+
+// Toggle Estado Activo / Disponible
+window.toggleEstado = function (id) {
+    const r = records.find(x => x.id === id);
+    if (!r) return;
+
+    const estadoStr = String(r.estatus || '').toLowerCase();
+
+    // Si era activo, pasa a Disponible. Si era cualquier otra cosa, pasa a Activo.
+    if (estadoStr === 'activo') {
+        r.estatus = 'En espera';
+    } else {
+        r.estatus = 'activo';
+    }
+
+    saveLocalAndCloud();
+    renderTable(searchInput.value);
+    updateStats();
 }
 
 function buildExportData() {
