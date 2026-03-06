@@ -59,7 +59,14 @@ function saveLocalAndCloud() {
 async function syncFromGoogle() {
     if (!GOOGLE_WEB_APP_URL) return;
     try {
-        const res = await fetch(GOOGLE_WEB_APP_URL);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 seconds timeout
+
+        const res = await fetch(GOOGLE_WEB_APP_URL, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) throw new Error("HTTP " + res.status);
+
         const data = await res.json();
         if (data && Array.isArray(data)) {
             records = data;
@@ -67,6 +74,9 @@ async function syncFromGoogle() {
         }
     } catch (e) {
         console.error("Error cargando desde Google Sheets:", e);
+        // Si hay error, mostrarlo unos segundos y continuar con lo local
+        tableBody.innerHTML = `<tr><td colspan="14" style="text-align:center; padding: 40px; color: var(--warn);">Error de red: no se pudo sincronizar (${e.message}). Cargando datos locales...</td></tr>`;
+        await new Promise(r => setTimeout(r, 2000));
     }
 }
 
@@ -195,12 +205,13 @@ function renderTable(filterText = searchInput.value) {
     tableBody.innerHTML = '';
 
     const filtered = records.filter(record => {
-        const textToSearch = `${record.cliente} ${record.plataforma} ${record.correo}`.toLowerCase();
+        const textToSearch = `${record.cliente || ''} ${record.plataforma || ''} ${record.correo || ''}`.toLowerCase();
         const matchesText = textToSearch.includes(filterText.toLowerCase());
 
         let matchesButton = true;
         if (currentFilterData === 'En espera') {
-            matchesButton = (record.estatus === 'En espera' || record.estatus === 'en espera' || record.estatus === 'espera');
+            const estadoStr = String(record.estatus || '').toLowerCase();
+            matchesButton = (estadoStr === 'en espera' || estadoStr === 'espera');
         } else if (currentFilterData !== 'Todos') {
             matchesButton = (record.plataforma === currentFilterData);
         }
@@ -209,7 +220,7 @@ function renderTable(filterText = searchInput.value) {
     });
 
     // Siempre ordenar por plataforma (base permanente)
-    filtered.sort((a, b) => a.plataforma.localeCompare(b.plataforma));
+    filtered.sort((a, b) => String(a.plataforma || '').localeCompare(String(b.plataforma || '')));
 
     if (sortPagoActive) {
         const order = { 'ya-pago': 1, 'paso-dia': 2, 'no-pagado': 3 };
@@ -217,7 +228,7 @@ function renderTable(filterText = searchInput.value) {
             const valA = order[a.pagoStatus || 'no-pagado'] || 3;
             const valB = order[b.pagoStatus || 'no-pagado'] || 3;
             // Si el estado de pago es igual, agrupar por plataforma
-            if (valA === valB) return a.plataforma.localeCompare(b.plataforma);
+            if (valA === valB) return String(a.plataforma || '').localeCompare(String(b.plataforma || ''));
             return valA - valB;
         });
     }
@@ -248,9 +259,9 @@ function renderTable(filterText = searchInput.value) {
             <td>${record.cliente}</td>
             <td>${record.pin || '-'}</td>
             <td style="color: var(--success); font-weight: 600;">${record.monto || '-'}</td>
-            <td>${record.diaCobro || '-'}</td>
+            <td>${record.diaCobro !== undefined ? record.diaCobro : '-'}</td>
             <td>
-                ${(record.whatsapp && record.whatsapp !== '-') ? `<a href="https://wa.me/${record.whatsapp.replace(/\D/g, '')}" target="_blank" style="color: #25D366; text-decoration: none;"><i class="fa-brands fa-whatsapp"></i> ${record.whatsapp}</a>` : '-'}
+                ${(record.whatsapp && String(record.whatsapp) !== '-') ? `<a href="https://wa.me/${String(record.whatsapp).replace(/\D/g, '')}" target="_blank" style="color: #25D366; text-decoration: none;"><i class="fa-brands fa-whatsapp"></i> ${record.whatsapp}</a>` : '-'}
             </td>
             <td>
                 <span class="badge badge-pago ${record.pagoStatus === 'ya-pago' ? 'badge-pago-green' : (record.pagoStatus === 'paso-dia' ? 'badge-pago-red' : 'badge-pago-blue')}" data-record-id="${record.id}">
