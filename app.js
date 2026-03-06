@@ -341,6 +341,7 @@ function updateStats() {
         if (acc.plataforma === 'Prime Video') costUSD += 2;
         if (acc.plataforma === 'Disney Plus') costPEN += 22;
         if (acc.plataforma === 'HBO MAX') costPEN += 14;
+        if (acc.plataforma === 'Apple Tv Plus') costPEN += 8;
     });
 
     // Calculate Revenue
