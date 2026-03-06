@@ -69,7 +69,11 @@ async function syncFromGoogle() {
 
         const data = await res.json();
         if (data && Array.isArray(data)) {
-            records = data;
+            // Asegurarnos de que todos los registros tengan un ID único
+            records = data.map(r => {
+                if (!r.id) r.id = crypto.randomUUID();
+                return r;
+            });
             localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
         }
     } catch (e) {
