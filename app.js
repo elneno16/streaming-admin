@@ -62,7 +62,9 @@ async function syncFromGoogle() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 seconds timeout
 
-        const res = await fetch(GOOGLE_WEB_APP_URL, { signal: controller.signal });
+        // Añadir un parámetro de tiempo para evitar caché y siempre traer datos frescos desde el GSheet
+        const urlToFetch = GOOGLE_WEB_APP_URL + "?t=" + Date.now();
+        const res = await fetch(urlToFetch, { signal: controller.signal, cache: 'no-store' });
         clearTimeout(timeoutId);
 
         if (!res.ok) throw new Error("HTTP " + res.status);
@@ -154,10 +156,13 @@ function updatePaymentStatuses() {
             changed = true;
         }
 
-        // Resetear al nuevo mes
-        if (r.pagoMonth !== currentMonth) {
+        // Extraer los primeros 7 caracteres para prevenir conversiones caprichosas de Excel (YYYY-MM...)
+        const recordMonth = String(r.pagoMonth).substring(0, 7);
+
+        // Resetear al nuevo mes (El día 1 a las 12am se ponen todos en azul automáticamente)
+        if (recordMonth !== currentMonth) {
             r.pagoMonth = currentMonth;
-            r.pagoStatus = 'no-pagado';
+            r.pagoStatus = 'no-pagado'; // Vuelve a azul para todo el mundo
             changed = true;
         }
 
