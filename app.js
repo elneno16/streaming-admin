@@ -32,7 +32,7 @@ const SEED_KEY = 'streamAdminProSeeded';
 // ==========================================
 // 1. Pega aquí el enlace de tu Google Apps Script (Web App URL)
 // 2. Si lo dejas vacío (""), el panel seguirá usando solo el almacenamiento local.
-const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyq7LxytsUSzJ_pgXC7UM9PiIqSkmd-A8zCYZHrSwY5z5cUq4I_o-JIFNXPmVAiJjcORQ/exec";
+const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzkZJuHdnFbOJhN9E8IAlFnifONkfP2dUTfxzTYX8XK3DWXGHbNydWRDxnguogXJrywkA/exec";
 
 let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
