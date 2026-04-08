@@ -112,8 +112,13 @@
                                 MAX Link</a>
                             <a href="https://link.apple.com/" target="_blank"><i class="fa-solid fa-tv"></i> Apple TV
                                 Link</a>
+                            <a href="https://www.streamglas.com/validador/" target="_blank"><i
+                                    class="fa-solid fa-check-double"></i> Validador StreamGlas</a>
                         </div>
                     </div>
+                    <button class="btn-secondary" id="btn-config">
+                        <i class="fa-solid fa-gear"></i> Configuración
+                    </button>
                     <button class="btn-secondary" id="btn-export-excel">
                         <i class="fa-solid fa-file-excel"></i> Exportar Archivo
                     </button>
@@ -304,6 +309,30 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-secondary" id="btn-cancel-export">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Configuración -->
+    <div class="modal-overlay" id="modal-config">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-gear"></i> Centro de Control</h2>
+                <button class="btn-close" id="btn-close-config"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div style="padding: 30px; display: flex; flex-direction: column; gap: 15px;">
+                <p style="font-size: 13px; text-align: center; color: var(--text-muted); margin-bottom: 10px;">Administración de sincronización con la nube.</p>
+                
+                <button class="btn-primary" id="btn-force-push" style="width: 100%; justify-content: center; padding: 14px; background: #673ab7; box-shadow: 0 4px 15px rgba(103, 58, 183, 0.3);">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> ENVIAR A LA NUBE (PC -> NUBE)
+                </button>
+
+                <button class="btn-primary" id="btn-force-pull" style="width: 100%; justify-content: center; padding: 14px; background: #2196f3; box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> CARGAR ACTUALIZACIONES (NUBE -> PC)
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="btn-cancel-config" style="width: 100%; justify-content: center;">Cerrar</button>
             </div>
         </div>
     </div>

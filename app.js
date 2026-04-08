@@ -43,16 +43,39 @@ if (!localStorage.getItem(SEED_KEY)) {
     localStorage.setItem(SEED_KEY, 'true');
 }
 
+// Función genérica para notificaciones
+function showToast(msg, type = 'success') {
+    const toast = document.createElement('div');
+    toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check' : 'fa-info-circle'}" style="margin-right:8px;"></i>${msg}`;
+    Object.assign(toast.style, {
+        position: 'fixed', bottom: '20px', right: '20px',
+        background: type === 'success' ? 'var(--success)' : 'var(--accent)', 
+        color: '#fff', padding: '12px 22px',
+        borderRadius: '10px', zIndex: '5000', fontSize: '14px',
+        fontWeight: '600', boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+        transition: 'opacity 0.4s', opacity: '1'
+    });
+    document.body.appendChild(toast);
+    setTimeout(() => toast.style.opacity = '0', 2000);
+    setTimeout(() => toast.remove(), 2500);
+}
+
 // Función para guardar tanto en local como en la nube (Google Sheets)
 function saveLocalAndCloud() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
     if (GOOGLE_WEB_APP_URL) {
-        // Sincronizar en segundo plano
-        fetch(GOOGLE_WEB_APP_URL, {
+        // Sincronizar y retornar la promesa
+        return fetch(GOOGLE_WEB_APP_URL, {
             method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: "sync", records: records })
-        }).catch(e => console.error("Error sincronizando con Google Sheets:", e));
+        }).catch(e => {
+            console.error("Error sincronizando con Google Sheets:", e);
+            throw e;
+        });
     }
+    return Promise.resolve();
 }
 
 // Función para descargar datos de Google Sheets al iniciar
@@ -125,6 +148,12 @@ const btnTools = document.getElementById('btn-tools');
 const toolsMenu = document.getElementById('tools-menu');
 const btnSortPago = document.getElementById('btn-sort-pago');
 const btnExportExcel = document.getElementById('btn-export-excel');
+const btnConfig = document.getElementById('btn-config');
+const modalConfig = document.getElementById('modal-config');
+const btnCloseConfig = document.getElementById('btn-close-config');
+const btnCancelConfig = document.getElementById('btn-cancel-config');
+const btnForcePush = document.getElementById('btn-force-push');
+const btnForcePull = document.getElementById('btn-force-pull');
 
 // Form Inputs
 const inputId = document.getElementById('record-id');
@@ -511,6 +540,52 @@ function setupEventListeners() {
             currentFilterData = e.currentTarget.getAttribute('data-filter');
             renderTable();
         });
+    });
+
+    // Eventos del modal de configuración
+    btnConfig.addEventListener('click', () => {
+        modalConfig.style.display = 'flex';
+        setTimeout(() => modalConfig.classList.add('active'), 10);
+    });
+
+    const closeConfig = () => {
+        modalConfig.classList.remove('active');
+        setTimeout(() => modalConfig.style.display = 'none', 300);
+    };
+
+    btnCloseConfig.addEventListener('click', closeConfig);
+    btnCancelConfig.addEventListener('click', closeConfig);
+
+    btnForcePush.addEventListener('click', async () => {
+        btnForcePush.disabled = true;
+        btnForcePush.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sincronizando...';
+        
+        try {
+            await saveLocalAndCloud();
+            showToast('¡Datos enviados a la nube con éxito!');
+        } catch (e) {
+            showToast('Error al sincronizar datos', 'info');
+        } finally {
+            btnForcePush.disabled = false;
+            btnForcePush.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> ENVIAR A LA NUBE (PC -> NUBE)';
+        }
+    });
+
+    btnForcePull.addEventListener('click', async () => {
+        btnForcePull.disabled = true;
+        btnForcePull.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cargando...';
+        
+        try {
+            await syncFromGoogle();
+            renderTable();
+            updateStats();
+            showToast('¡Actualizaciones cargadas desde la nube!');
+        } catch (e) {
+            showToast('Error al cargar actualizaciones', 'info');
+        } finally {
+            btnForcePull.disabled = false;
+            btnForcePull.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> CARGAR ACTUALIZACIONES (NUBE -> PC)';
+        }
     });
 }
 
